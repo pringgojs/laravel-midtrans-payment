@@ -10,7 +10,6 @@ class Midtrans {
     * @static
     */
   public static $serverKey;
-  
   /**
     * true for production
     * false for sandbox mode
@@ -25,6 +24,7 @@ class Midtrans {
     public static $curlOptions = array(); 
 
     const SANDBOX_CHARGE_BASE_URL = 'https://api.sandbox.midtrans.com/v2/charge';
+    const PRODUCTION_CHARGE_BASE_URL = 'https://api.midtrans.com/v2/charge';
     const SANDBOX_BASE_URL = 'https://api.sandbox.veritrans.co.id/v2';
     const PRODUCTION_BASE_URL = 'https://api.veritrans.co.id/v2';
     const SNAP_SANDBOX_BASE_URL = 'https://app.sandbox.midtrans.com/snap/v1';
@@ -55,7 +55,7 @@ class Midtrans {
     public static function getChargeBaseUrl()
     {
       return Midtrans::$isProduction ?
-          Midtrans::SANDBOX_CHARGE_BASE_URL : Midtrans::SANDBOX_CHARGE_BASE_URL;
+          Midtrans::PRODUCTION_CHARGE_BASE_URL : Midtrans::SANDBOX_CHARGE_BASE_URL;
     }
 
   /**

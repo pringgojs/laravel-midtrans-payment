@@ -1,19 +1,20 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
 use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Veritrans\Midtrans;
+use Illuminate\Http\Request;
+
+use App\Http\Controllers\Controller;
+use App\Models\VendingMachineTransaction;
 
 class SnapController extends Controller
 {
     public function __construct()
     {   
-        Midtrans::$serverKey = 'SB-Mid-server-KDoijBQHJ4ZrNbcQXaXtMtrk';
+        Midtrans::$serverKey = 'Mid-server-t8Oa-aKyXzJui7gm5sNbcM6Z';
         //set is production to true for production mode
-        Midtrans::$isProduction = false;
+        Midtrans::$isProduction = true;
     }
 
     public function snap()
@@ -21,62 +22,36 @@ class SnapController extends Controller
         return view('snap_checkout');
     }
 
-    public function token() 
+    public function gopay($id) 
     {
+        $transaction = VendingMachineTransaction::findOrFail($id);
+        $customer = $transaction->customer;
+        
         error_log('masuk ke snap token dri ajax');
         $midtrans = new Midtrans;
-
+        
         $transaction_details = array(
-            'order_id'      => uniqid(),
-            'gross_amount'  => 200000
+            'order_id'      => $transaction->id,
+            'gross_amount'  => $transaction->selling_price_vending_machine
         );
 
         // Populate items
         $items = [
             array(
-                'id'        => 'item1',
-                'price'     => 100000,
+                'id'        => $transaction->vendingMachineSlot->id,
+                'price'     => $transaction->selling_price_vending_machine,
                 'quantity'  => 1,
-                'name'      => 'Adidas f50'
-            ),
-            array(
-                'id'        => 'item2',
-                'price'     => 50000,
-                'quantity'  => 2,
-                'name'      => 'Nike N90'
+                'name'      => $transaction->vendingMachineSlot->food_name,
             )
         ];
 
-        // Populate customer's billing address
-        $billing_address = array(
-            'first_name'    => "Andri",
-            'last_name'     => "Setiawan",
-            'address'       => "Karet Belakang 15A, Setiabudi.",
-            'city'          => "Jakarta",
-            'postal_code'   => "51161",
-            'phone'         => "081322311801",
-            'country_code'  => 'IDN'
-            );
-
-        // Populate customer's shipping address
-        $shipping_address = array(
-            'first_name'    => "John",
-            'last_name'     => "Watson",
-            'address'       => "Bakerstreet 221B.",
-            'city'          => "Jakarta",
-            'postal_code'   => "51162",
-            'phone'         => "081322311801",
-            'country_code'  => 'IDN'
-            );
 
         // Populate customer's Info
         $customer_details = array(
-            'first_name'      => "Andri",
-            'last_name'       => "Setiawan",
-            'email'           => "andrisetiawan@asdasd.com",
-            'phone'           => "081322311801",
-            'billing_address' => $billing_address,
-            'shipping_address'=> $shipping_address
+            'first_name'      => $customer->name,
+            'last_name'       => '',
+            'email'           => $customer->email,
+            'phone'           => $customer->phone,
             );
 
         // Data yang akan dikirim untuk request redirect_url.
@@ -92,16 +67,15 @@ class SnapController extends Controller
         );
         
         $transaction_data = array(
+            'payment_type' => 'gopay',
             'transaction_details'=> $transaction_details,
             'item_details'       => $items,
-            'customer_details'   => $customer_details,
-            'credit_card'        => $credit_card,
-            'expiry'             => $custom_expiry
+            'customer_details'   => $customer_details
         );
     
         try
         {
-            $snap_token = $midtrans->getSnapToken($transaction_data);
+            $snap_token = $midtrans->gopayCharge($transaction_data);
             //return redirect($vtweb_url);
             echo $snap_token;
         } 
@@ -112,7 +86,7 @@ class SnapController extends Controller
     }
 
     // CHARGE GOPAY
-    public function gopay() 
+    public function token() 
     {
         error_log('masuk ke snap token dri ajax');
         $midtrans = new Midtrans;

@@ -22,7 +22,7 @@ Route::post('/vt_transaction', 'PagesController@transaction_process');
 
 Route::post('/vt_notif', 'PagesController@notification');
 
-Route::get('/gopay', 'SnapController@gopay');
+Route::get('/gopay/{id}', 'SnapController@gopay');
 Route::get('/snap', 'SnapController@snap');
 Route::get('/snaptoken', 'SnapController@token');
 Route::post('/snapfinish', 'SnapController@finish');
